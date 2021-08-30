@@ -74,7 +74,7 @@ phases=np.arange(0,1,0.1)   #phase
 
 #stim2003: 60% grey
 try:
-    imagearr = np.load('Stimuli/all_stims_exp2.npy') #load stims if previously generated
+    imagearr = np.load('/Users/s3344282/Stimuli/all_stims_exp2.npy') #load stims if previously generated
 except FileNotFoundError: #or generate
     imagearr=np.zeros((0,diameter**2))
     for phase in phases:
@@ -152,6 +152,7 @@ def reactivate_func(t):
         return np.zeros(Nm)
 
 #sine wave for the gated mechanism
+#30Hz rhythm
 f = 30.
 w = 2. * np.pi * f
 def gate_func(t):
@@ -160,49 +161,15 @@ def gate_func(t):
     else:
         return np.ones(Ns)*(-1)
 
+#sine wave for the deletion mechanism 
+#10Hz rhythm
+f = 10.
+w = 2. * np.pi * f
 def clear_func(t):
-    if t > 2.250 and t < 2.270:
-        return np.ones(Nm)*0.02
-    if t > 2.350 and t < 2.370:
-        return np.ones(Nm)*0.02
-    elif t > 2.450 and t < 2.470:
-        return np.ones(Nm)*0.02
-    elif t > 2.550 and t < 2.570:
-        return np.ones(Nm)*0.02
-    elif t > 2.650 and t < 2.670:
-        return np.ones(Nm)*0.02
-    elif t > 2.750 and t < 2.770:
-        return np.ones(Nm)*0.02
-    elif t > 2.850 and t < 2.870:
-        return np.ones(Nm)*0.02
-    elif t > 2.950 and t < 2.970:
-        return np.ones(Nm)*0.02
-    elif t > 3.050 and t < 3.070:
-        return np.ones(Nm)*0.02
-    elif t > 3.150 and t < 3.170:
-        return np.ones(Nm)*0.02
-    elif t > 3.250 and t < 3.270:
-        return np.ones(Nm)*0.02
-    elif t > 2.350 and t < 3.370:
-        return np.ones(Nm)*0.02
-    elif t > 3.450 and t < 3.470:
-        return np.ones(Nm)*0.02
-    elif t > 3.550 and t < 3.570:
-        return np.ones(Nm)*0.02
-    elif t > 3.650 and t < 3.670:
-        return np.ones(Nm)*0.02
-    elif t > 3.750 and t < 3.770:
-        return np.ones(Nm)*0.02
-    elif t > 3.850 and t < 3.870:
-        return np.ones(Nm)*0.02
-    elif t > 3.950 and t < 3.970:
-        return np.ones(Nm)*0.02
-    elif t > 4.050 and t < 4.070:
-        return np.ones(Nm)*0.02
-    elif t > 4.150 and t < 4.170:
-        return np.ones(Nm)*0.02
-    elif t > 4.250 and t < 4.270:
-        return np.ones(Nm)*0.02
+    if t > 0 and t < 1.0:
+        a = 0.02 * np.sin(t*w)
+        a = max(a,0)
+        return np.ones(Nm) * a
     else:
         return np.zeros(Nm)
 
@@ -252,7 +219,7 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
     #reactivation is the same for each trial
     inputs_reactivate[:,int(2250/res):int(2270/res),:] = np.ones(Nm)*0.0200
 
-    #inputs gate is the same for each trial 
+    #inputs_gate is the same for each trial 
     Fs = 750
     f = 30
     x = np.arange(Fs)
@@ -261,11 +228,16 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
     for neuron in range(Ns):
         inputs_gate[:,int(300/res):int(1800/res),neuron] = sine_input
 
-    #clear_func is the same on each trial
-    clear_start = range(2250, 4300, 100)
-    clear_stop = range(2270, 4320, 100)
-    for start_, stop_ in zip(clear_start, clear_stop):
-        inputs_clear[:,int(start_/res):int(stop_/res),:] = np.ones(Nm)*0.02
+    #inputs_clear is the same for each trial 
+    Fs = 1025
+    f = 10
+    x = np.arange(Fs)
+    sine_input = 0.02 * np.sin(2 * np.pi * f * x / Fs)
+    for i in x: 
+        sine_input[i] = max(sine_input[i], 0)
+
+    for neuron in range(Nm):
+        inputs_clear[:,int(2250/2):int(4300/2),neuron] = sine_input
 
     end = timer()
 
@@ -315,8 +287,8 @@ def generate_gabors():
     global compressed_im_second
 
     #to speed things up, load previously generated ones
-    if load_gabors_svd & os.path.isfile('Stimuli/gabors_svd_first_exp2.npz'):
-        gabors_svd_first = np.load('Stimuli/gabors_svd_first_exp2.npz') #load stims if previously generated
+    if load_gabors_svd & os.path.isfile('/Users/s3344282/Stimuli/gabors_svd_first_exp2.npz'):
+        gabors_svd_first = np.load('/Users/s3344282/Stimuli/gabors_svd_first_exp2.npz') #load stims if previously generated
         e_first = gabors_svd_first['e_first']
         U_first = gabors_svd_first['U_first']
         compressed_im_first = gabors_svd_first['compressed_im_first']
@@ -344,12 +316,12 @@ def generate_gabors():
         compressed_im_first = np.dot(imagearr[:1800,:]/100, U_first[:,:D]) #D-dimensional vector reps of the images
         compressed_im_first = np.vstack((compressed_im_first, np.dot(imagearr[-1,:]/50, U_first[:,:D])))
 
-        np.savez('Stimuli/gabors_svd_first_exp2.npz', e_first=e_first, U_first=U_first, compressed_im_first=compressed_im_first)
+        np.savez('/Users/s3344282/Stimuli/gabors_svd_first_exp2.npz', e_first=e_first, U_first=U_first, compressed_im_first=compressed_im_first)
 
     #same for secondary module
 
-    if load_gabors_svd & os.path.isfile('Stimuli/gabors_svd_second_exp2.npz'):
-        gabors_svd_second = np.load('Stimuli/gabors_svd_second_exp2.npz') #load stims if previously generated
+    if load_gabors_svd & os.path.isfile('/Users/s3344282/Stimuli/gabors_svd_second_exp2.npz'):
+        gabors_svd_second = np.load('/Users/s3344282/Stimuli/gabors_svd_second_exp2.npz') #load stims if previously generated
         e_second = gabors_svd_second['e_second']
         U_second = gabors_svd_second['U_second']
         compressed_im_second = gabors_svd_second['compressed_im_second']
@@ -367,7 +339,7 @@ def generate_gabors():
         compressed_im_second=np.dot(imagearr[:1800,:]/100, U_second[:,:D])
         compressed_im_second = np.vstack((compressed_im_second, np.dot(imagearr[-1,:]/50, U_second[:,:D])))
 
-        np.savez('Stimuli/gabors_svd_second_exp2.npz', e_second=e_second, U_second=U_second, compressed_im_second=compressed_im_second)
+        np.savez('/Users/s3344282/Stimuli/gabors_svd_second_exp2.npz', e_second=e_second, U_second=U_second, compressed_im_second=compressed_im_second)
 
 nengo_gui_on = __name__ == 'builtins' #python3
 
@@ -515,7 +487,7 @@ def create_model(seed=None):
         gate = nengo.Ensemble(Ns, D, intercepts=nengo.dists.Uniform(0.01, 0.1),radius=1, label="gate")
         nengo.Connection(model.gateNode, gate.neurons)#,transform=np.ones((Ns,1)))
         nengo.Connection(sensory_first, gate, synapse=.05, transform = 1.0) #play with these transform values (eg 1.2/1.2 with gatefunc3)
-        nengo.Connection(gate, sensory_first, synapse=.05, transform = 0.8) #play with these transform values or 1.0/.8 with gatefunc4
+        nengo.Connection(gate, sensory_first, synapse=.05, transform = 0.8) #play with these transform values or 1.0/.8 with gatefunc
 
         #memory ensemble
         noise_first= nengo.processes.WhiteNoise(dist=Gaussian(0,noise_sd))
@@ -584,7 +556,9 @@ plt.style.use('default')
 
 def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
 
-    figure_name = 'Sim_1/full_model/exp2_integrated_model/exp2_figure'
+    save_path = '/Users/s3344282/alpha_sinewave_data/sim1'
+
+    figure_name = os.path.join(save_path,'exp2_figure')
 
     #representations  & spikes
     with plt.rc_context():
@@ -877,13 +851,13 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/"
+        data_path = "/Users/s3344282/alpha_sinewave_data/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
-        n_subj =  19 #19
-        trials_per_subj = 1728
+        n_subj =  1 #19
+        trials_per_subj = 144
         store_representations = False
         store_decisions = True
         store_memory = True
@@ -950,10 +924,10 @@ else: #no gui
 
                         trial = batch * minibatch_size + in_batch_trial + 1
 
-                        np.savetxt(data_path+"Performance/full_model/exp2_integrated_model/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe1.csv" % (anglediff, subj+1, trial),
+                        np.savetxt(data_path+"Performance/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe1.csv" % (anglediff, subj+1, trial),
                             sim.data[model.p_dec_first][in_batch_trial,int((1800)/res):int((2100)/res),:], delimiter=",")
 
-                        np.savetxt(data_path+"Performance/full_model/exp2_integrated_model/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe2.csv" % (anglediff, subj+1, trial),
+                        np.savetxt(data_path+"Performance/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe2.csv" % (anglediff, subj+1, trial),
                             sim.data[model.p_dec_second][in_batch_trial,int((4300)/res):int((4600)/res),:], delimiter=",")
 
                 #store neuron data (sim 3)
@@ -969,9 +943,9 @@ else: #no gui
                     #use this for-loop is you want to split the neuron data to separate files, otherwise use the commented out code above above sim.close()
                     if (batch+1)%(n_batches/split)==0:
 
-                        np.save(data_path+"Decoding/full_model/exp2_integrated_model/subj_%i_mem_neuron_data_first_%i.npy" % (subj+1, split_index), neuro_mem_first)
-                        np.save(data_path+"Decoding/full_model/exp2_integrated_model/subj_%i_mem_neuron_data_second_%i.npy" % (subj+1, split_index), neuro_mem_second)
-                        np.save(data_path+"Decoding/full_model/exp2_integrated_model/subj_%i_initial_angles_%i.npy" % (subj+1, split_index), initialangles)
+                        np.save(data_path+"Decoding/subj_%i_mem_neuron_data_first_%i.npy" % (subj+1, split_index), neuro_mem_first)
+                        np.save(data_path+"Decoding/subj_%i_mem_neuron_data_second_%i.npy" % (subj+1, split_index), neuro_mem_second)
+                        np.save(data_path+"Decoding/subj_%i_initial_angles_%i.npy" % (subj+1, split_index), initialangles)
 
                         initialangles[:]=0
                         neuro_mem_first[:,:,:]=0

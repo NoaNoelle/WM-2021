@@ -18,17 +18,7 @@ from sklearn.decomposition import PCA
 import time
 
 """
-Integrated Model 1: activity-silent model with content-specific 
-reactivation to maintain information in one population and generic
-reactivation to delete the information maintained in the primary module
-following the first probe.
-
-Memory population contains STP neurons, the recurrent connection on the 
-memory population contains the STP learning rule and weights solver. 
-
-Content-specific reactivation is achieved through the sensory maintenance
-mechanism on the primary sensory population; the generic reactivation is 
-fed to the memory population of the primary module after the first probe.
+Integrated Model: CSR on memory population.
 """
 
 #SIMULATION CONTROL for GUI

@@ -147,13 +147,13 @@ def reactivate_func(t):
 
 #sine wave for the gated mechanism
 #30Hz rhythm
-f = 30.
+f = 10.
 w = 2. * np.pi * f
 def gate_func(t):
     if t > 0.300 and t < 1.8:
-        return np.ones(Ns)*np.sin(t*w)
+        return np.ones(Nm)*np.sin(t*w)
     else:
-        return np.ones(Ns)*(-1)
+        return np.ones(Nm)*(-1)
 
 #sine wave for the deletion mechanism 
 #10Hz rhythm
@@ -223,7 +223,7 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
 
     #inputs_gate is the same for each trial 
     Fs = 750
-    f = 30
+    f = 10
     x = np.arange(Fs)
     sine_input = np.sin(2 * np.pi * f * x / Fs)
 
@@ -377,7 +377,7 @@ def create_model(seed=None):
             model.clearNode=nengo.Node(clear_func,label="clearance")
         elif batch_processing:
             model.inputNode_first=nengo.Node(np.zeros(128*128))
-            model.gateNode=nengo.Node(np.zeros(Ns))
+            model.gateNode=nengo.Node(np.zeros(Nm))
             model.clearNode=nengo.Node(np.zeros(Nm))
 
         #eye ensemble
@@ -485,12 +485,6 @@ def create_model(seed=None):
 
         nengo.Connection(sensory_first, eye_first, transform = rec_trans, solver=nengo.solvers.LstsqL2(weights=True), synapse=0.200)
 
-        #gating mechanism
-        gate = nengo.Ensemble(Ns, D, intercepts=nengo.dists.Uniform(0.01, 0.1),radius=1, label="gate")
-        nengo.Connection(model.gateNode, gate.neurons)#,transform=np.ones((Ns,1)))
-        nengo.Connection(sensory_first, gate, synapse=.05, transform = 1.0) #play with these transform values (eg 1.2/1.2 with gatefunc3)
-        nengo.Connection(gate, sensory_first, synapse=.05, transform = 0.8) #play with these transform values or 1.0/.8 with gatefunc
-
         #memory ensemble
         noise_first= nengo.processes.WhiteNoise(dist=Gaussian(0,noise_sd))
 
@@ -500,6 +494,12 @@ def create_model(seed=None):
 
         #recurrent STSP connection
         nengo.Connection(memory_first, memory_first,transform=1, learning_rule_type=STP(), solver=nengo.solvers.LstsqL2(weights=True))
+
+        #gating mechanism
+        gate = nengo.Ensemble(Nm, D, intercepts=nengo.dists.Uniform(0.01, 0.1),radius=1, label="gate")
+        nengo.Connection(model.gateNode, gate.neurons)#,transform=np.ones((Ns,1)))
+        nengo.Connection(memory_first, gate, synapse=.05, transform = 1.0) #play with these transform values (eg 1.2/1.2 with gatefunc3)
+        nengo.Connection(gate, memory_first, synapse=.05, transform = 0.8) #play with these transform values or 1.0/.8 with gatefunc
 
         #comparison represents sin, cosine of theta of both sensory and memory ensemble
         comparison_first = nengo.Ensemble(Nc, dimensions=4,radius=math.sqrt(2),intercepts=Uniform(.01, 1),label='comparison_first')
@@ -558,7 +558,7 @@ plt.style.use('default')
 
 def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
 
-    save_path = '/Users/s3344282/WM-2021/data/kmeans/sim1'
+    save_path = '/Users/s3344282/WM-2021/data/CSR-on-memory/sim1'
 
     figure_name = os.path.join(save_path,'exp2_figure')
 
@@ -853,7 +853,7 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/WM-2021/data/kmeans/"
+        data_path = "/Users/s3344282/WM-2021/data/CSR-on-memory/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
@@ -878,7 +878,7 @@ else: #no gui
         input_data_first = np.zeros((minibatch_size, n_steps, 128*128))
         input_data_second = np.zeros((minibatch_size, n_steps, 128*128))
         input_data_reactivate = np.zeros((minibatch_size, n_steps, Nm))
-        input_data_gate = np.ones((minibatch_size, n_steps, Ns))*(-1)
+        input_data_gate = np.ones((minibatch_size, n_steps, Nm))*(-1)
         input_data_clear = np.zeros((minibatch_size, n_steps, Nm))
         data_initialangles_first = np.zeros(minibatch_size)
         data_initialangles_second = np.zeros(minibatch_size)

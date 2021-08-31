@@ -19,9 +19,9 @@ import time
 
 """
 Integrated Model 1: activity-silent model with content-specific 
-reactivation to maintain information in one population and generic
-reactivation to delete the information maintained in the primary module
-following the first probe.
+oscillations (alpha) to maintain information in one population and 
+unspecific oscillatory activation (alpha) to delete the information 
+maintained in the primary module following the first probe.
 
 Memory population contains STP neurons, the recurrent connection on the 
 memory population contains the STP learning rule and weights solver. 
@@ -157,7 +157,7 @@ def reactivate_func(t):
 
 #sine wave for the gated mechanism
 #30Hz rhythm
-f = 30.
+f = 10.
 w = 2. * np.pi * f
 def gate_func(t):
     if t > 0.300 and t < 1.8:
@@ -233,7 +233,7 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
 
     #inputs_gate is the same for each trial 
     Fs = 750
-    f = 30
+    f = 10
     x = np.arange(Fs)
     sine_input = np.sin(2 * np.pi * f * x / Fs)
 

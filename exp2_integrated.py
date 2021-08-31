@@ -12,6 +12,10 @@ import nengo.spa as spa
 import os.path
 import nengo_dl
 from timeit import default_timer as timer
+from sklearn.cluster import KMeans
+from scipy import io
+from sklearn.decomposition import PCA
+import time
 
 """
 Integrated Model 1: activity-silent model with content-specific 
@@ -38,7 +42,7 @@ store_memory = False #store neural output for Cross Temporal Analysis
 #1 = representations & spikes
 #2 = performance, decision signal
 sim_to_run = 2
-sim_no="2"      #simulation number (used in the names of the outputfiles)
+sim_no=str(sim_to_run)     #simulation number (used in the names of the outputfiles)
 
 # tf.config.list_physical_devices('GPU')
 ##batch processing did not work in exp1 for sim1, so check whether this works here
@@ -49,7 +53,7 @@ elif sim_to_run==2:
 
 #set this for use with nengo DL
 if batch_processing:
-    device="/gpu:2" #select GPU, use 0 (Nvidia 1) or 1 (Nvidia 3) for regular simulator, and 2 (Titan Xp 2) or 3 (Titan X (Pascal)) for batch processing
+    device="/gpu:3" #select GPU, use 0 (Nvidia 1) or 1 (Nvidia 3) for regular simulator, and 2 (Titan Xp 2) or 3 (Titan X (Pascal)) for batch processing
 if not batch_processing:
     device="/gpu:1"
 
@@ -174,7 +178,8 @@ def clear_func(t):
         return np.zeros(Nm)
 
 #create data for batch processing using the Nengo DL simulator
-def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs_clear, initialangles, n_trials, probelist, res):
+def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs_clear, initialangles_first, initialangles_second, n_trials, probelist, res):
+    
     start = timer()
 
     #trials come in sets of 12, which we call a run (all possible orientation differences between memory and probe),
@@ -198,10 +203,17 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
             probe_first=probe_first+(180*randint(0, 9))
 
             #same for secondary item
-            memory_item_second = memory_item_first
-            probe_second = probe_first
+            memory_item_second = randint(0, 179)
+            probe_second=memory_item_second+anglediff #probe based on that
+            probe_second=norm_p(probe_second) #normalise probe
 
-            initialangles[i] = or_memory_item_first
+            #random phase
+            or_memory_item_second=memory_item_second #original
+            memory_item_second=memory_item_second+(180*randint(0, 9))
+            probe_second=probe_second+(180*randint(0, 9))
+
+            initialangles_first[i] = or_memory_item_first
+            initialangles_second[i] = or_memory_item_second
 
             inputs_first[i,0:int(250/res),:]=(imagearr[memory_item_first,:]/100) * 1.0
             inputs_first[i,int(1800/res):int(2050/res),:]=imagearr[probe_first,:]/100
@@ -556,7 +568,7 @@ plt.style.use('default')
 
 def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
 
-    save_path = '/Users/s3344282/alpha_sinewave_data/sim1'
+    save_path = '/Users/s3344282/WM-2021/data/kmeans/sim1'
 
     figure_name = os.path.join(save_path,'exp2_figure')
 
@@ -851,18 +863,18 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/alpha_sinewave_data/"
+        data_path = "/Users/s3344282/WM-2021/data/kmeans/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
         n_subj =  1 #19
-        trials_per_subj = 144
+        trials_per_subj = 1728
         store_representations = False
         store_decisions = True
         store_memory = True
 
-        split = 6 #we split the neuron data into this many separate files to decrease the cpu memory use, set to 1 for no split
+        split = 1 #6 #we split the neuron data into this many separate files to decrease the cpu memory use, set to 1 for no split
 
         #division in the form of n_trials/minibatch_size/split should yield a whole integer, otherwise indexing errors will occur and/or the number of trials performed will not be as specified.
 
@@ -878,10 +890,19 @@ else: #no gui
         input_data_reactivate = np.zeros((minibatch_size, n_steps, Nm))
         input_data_gate = np.ones((minibatch_size, n_steps, Ns))*(-1)
         input_data_clear = np.zeros((minibatch_size, n_steps, Nm))
-        data_initialangles = np.zeros(minibatch_size)
+        data_initialangles_first = np.zeros(minibatch_size)
+        data_initialangles_second = np.zeros(minibatch_size)
+
+        if store_decisions:
+            dec_probes = np.zeros(int(trials_per_subj))
+            dec_probe1 = np.zeros((int(trials_per_subj), int(200/res)))
+            dec_probe2 = np.zeros((int(trials_per_subj), int(200/res)))
+
 
         if store_memory:
-            initialangles = np.zeros(int(trials_per_subj/split))
+            initialangles_first = np.zeros(int(trials_per_subj/split))
+            initialangles_second = np.zeros(int(trials_per_subj/split))
+
             neuro_mem_first = np.zeros((int(trials_per_subj/split), n_steps, Nm))
             neuro_mem_second = np.zeros((int(trials_per_subj/split), n_steps, Nm))
 
@@ -894,7 +915,7 @@ else: #no gui
             model = create_model(seed=subj)
 
             #use Nengo DL simulator to make use of the Nengo DL implementation of STSP and batch processing, set dt in accordance with resolution.
-            sim = nengo_dl.Simulator(network=model, minibatch_size=minibatch_size, seed=subj, device=device, progress_bar=False, dt=0.002)
+            sim = nengo_dl.Simulator(network=model, minibatch_size=minibatch_size, seed=subj, device=device, progress_bar=False, dt=res/1000)
 
             n_batches = int(trials_per_subj/minibatch_size)
 
@@ -902,7 +923,7 @@ else: #no gui
 
                 print("Subject " + str(subj + 1) + "/" + str(n_subj) + ": batch " + str(batch+1) + "/" + str(n_batches) + ": " + str(minibatch_size) + " trials in batch")
 
-                get_data(input_data_first, input_data_second, input_data_reactivate, input_data_gate, input_data_clear, data_initialangles, minibatch_size, probelist, res)
+                get_data(input_data_first, input_data_second, input_data_reactivate, input_data_gate, input_data_clear, data_initialangles_first, data_initialangles_second, minibatch_size, probelist, res)
 
                 #run simulation
                 sim.run_steps(
@@ -918,24 +939,44 @@ else: #no gui
 
                 #store performance data (sim 2)
                 if store_decisions:
-                    for in_batch_trial in range(minibatch_size):
+                    trial_index_start=int((batch*minibatch_size)%(trials_per_subj/split))
+                    trial_index_end=trial_index_start+minibatch_size
+                    
+                    dec_probes[trial_index_start:trial_index_end]=probelist
 
-                        anglediff = probelist[in_batch_trial%12]
+                    dec_probe1[trial_index_start:trial_index_end, :] = np.squeeze(sim.data[model.p_dec_first][:,int(1800/res):int(2000/res)])
+                    dec_probe2[trial_index_start:trial_index_end, :] = np.squeeze(sim.data[model.p_dec_second][:,int(4300/res):int(4500/res)])
+                    
+                    
+                   #  for in_batch_trial in range(minibatch_size):
+# 
+#                         trial = batch * minibatch_size + in_batch_trial + 1
+# 
+#                         np.savetxt(data_path+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe1.csv" % (anglediff, subj+1, trial),
+#                             sim.data[model.p_dec_first][in_batch_trial,int((1800)/res):int((2100)/res),:], delimiter=",")
+# 
+#                         np.savetxt(data_path+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe2.csv" % (anglediff, subj+1, trial),
+#                             sim.data[model.p_dec_second][in_batch_trial,int((4300)/res):int((4600)/res),:], delimiter=",")
 
-                        trial = batch * minibatch_size + in_batch_trial + 1
+                    if (batch+1)%(n_batches)==0:
 
-                        np.savetxt(data_path+"Performance/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe1.csv" % (anglediff, subj+1, trial),
-                            sim.data[model.p_dec_first][in_batch_trial,int((1800)/res):int((2100)/res),:], delimiter=",")
+                        np.savetxt(data_path+"Performance/subj_%i_dec_probe1.csv" % (subj+1), dec_probe1 , delimiter=",")
+                        np.savetxt(data_path+"Performance/subj_%i_dec_probe2.csv" % (subj+1), dec_probe2 , delimiter=",")
+                        
+                        np.savetxt(data_path+"Performance/subj_%i_probes.csv" % (subj+1), dec_probes)
 
-                        np.savetxt(data_path+"Performance/"+sim_no+"_Diff_Theta_%i_subj_%i_trial_%i_probe2.csv" % (anglediff, subj+1, trial),
-                            sim.data[model.p_dec_second][in_batch_trial,int((4300)/res):int((4600)/res),:], delimiter=",")
+                        dec_probes[:]=0
+                        dec_probe1[:,:]=0
+                        dec_probe2[:,:]=0
+
 
                 #store neuron data (sim 3)
                 if store_memory:
                     trial_index_start=int((batch*minibatch_size)%(trials_per_subj/split))
                     trial_index_end=trial_index_start+minibatch_size
 
-                    initialangles[trial_index_start:trial_index_end]=data_initialangles
+                    initialangles_first[trial_index_start:trial_index_end]=data_initialangles_first
+                    initialangles_second[trial_index_start:trial_index_end]=data_initialangles_second
 
                     neuro_mem_first[trial_index_start:trial_index_end, :, :] = sim.data[model.p_mem_first_raw]
                     neuro_mem_second[trial_index_start:trial_index_end, :, :] = sim.data[model.p_mem_second_raw]
@@ -943,13 +984,54 @@ else: #no gui
                     #use this for-loop is you want to split the neuron data to separate files, otherwise use the commented out code above above sim.close()
                     if (batch+1)%(n_batches/split)==0:
 
-                        np.save(data_path+"Decoding/subj_%i_mem_neuron_data_first_%i.npy" % (subj+1, split_index), neuro_mem_first)
-                        np.save(data_path+"Decoding/subj_%i_mem_neuron_data_second_%i.npy" % (subj+1, split_index), neuro_mem_second)
-                        np.save(data_path+"Decoding/subj_%i_initial_angles_%i.npy" % (subj+1, split_index), initialangles)
-
-                        initialangles[:]=0
+                        #np.save(data_path+"subj_%i_mem_neuron_data_first_%i.npy" % (subj+1, split_index), neuro_mem_first)
+                        #np.save(data_path+"subj_%i_mem_neuron_data_second_%i.npy" % (subj+1, split_index), neuro_mem_second)
+                        
+                        #already cluster this.
+                        #make 17 clusters (reflecting 17 EEG channels)
+                        mem_data = np.concatenate((neuro_mem_first,neuro_mem_second),axis=2) #144 x 2300 x 3000 
+                        
                         neuro_mem_first[:,:,:]=0
                         neuro_mem_second[:,:,:]=0
+                        
+                        cut_size = 125 #=during stim presentation
+                        new_data = np.reshape(mem_data[:, :cut_size, :], (mem_data.shape[0] * cut_size, mem_data.shape[2])) 
+
+                        num_channels = 17
+                        #neurons = np.mean(cut_data, 1).T # neurons by trials
+
+                        t = time.time()
+
+                        kmeans = KMeans(n_clusters=num_channels, n_init=20, n_jobs=10, tol=1e-20).fit(new_data.T)
+                        elapsed = time.time() - t
+                        print('Kmeans: ' + str(elapsed))
+                        
+                        del(new_data)
+
+                        t = time.time()
+
+                        channel_data = np.empty((mem_data.shape[0], num_channels, 600)) # trials by num_channels by timesteps
+                        for channel in range(num_channels):
+                            print(str(channel + 1) + "/" + str(num_channels))
+                            channel_data[:, channel, :] = np.mean(mem_data[:, :600, kmeans.labels_ == channel], axis=2)
+    
+                        elapsed = time.time() - t
+                        print('transform: ' + str(elapsed))
+                        del(mem_data)
+
+                        #save eerste 1200 ms
+                        #channel_data = channel_data[:,:,0:600]
+
+                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_%i_kmeansJPB.mat" % (subj+1, split_index), {"channel_data": channel_data})
+                        del(channel_data)
+                        
+                        #np.save(data_path+"subj_%i_initial_angles_first_%i.npy" % (subj+1, split_index), initialangles_first)
+                        #np.save(data_path+"subj_%i_initial_angles_second_%i.npy" % (subj+1, split_index), initialangles_second)
+                        np.savetxt(data_path+"Decoding/subj_%i_initial_angles_first_%i.csv" % (subj+1, split_index), initialangles_first)
+                        np.savetxt(data_path+"Decoding/subj_%i_initial_angles_second_%i.csv" % (subj+1, split_index), initialangles_second)
+
+                        initialangles_first[:]=0
+                        initialangles_second[:]=0
 
                         split_index+=1
 

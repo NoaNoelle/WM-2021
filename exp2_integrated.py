@@ -160,7 +160,7 @@ def gate_func(t):
 f = 10.
 w = 2. * np.pi * f
 def clear_func(t):
-    if t > 0 and t < 1.0:
+    if t > 2.25 and t < 4.3:
         a = 0.02 * np.sin(t*w)
         a = max(a,0)
         return np.ones(Nm) * a
@@ -558,7 +558,7 @@ plt.style.use('default')
 
 def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
 
-    save_path = '/Users/s3344282/WM-2021/data/kmeans/sim1'
+    save_path = '/Users/s3344282/WM-2021/data/CSR-onset/300'
 
     figure_name = os.path.join(save_path,'exp2_figure')
 
@@ -641,93 +641,93 @@ def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
         plt.show()
 
 
-    # impulse 1
-    with plt.rc_context():
-        plt.rcParams.update(theme.rcParams)
+    # # impulse 1
+    # with plt.rc_context():
+    #     plt.rcParams.update(theme.rcParams)
 
-        fig, axes, = plt.subplots(1,2,squeeze=True)
-        theme.setup_figure(fig)
-        t = sim.trange()
-        plt.subplots_adjust(wspace=0.1, hspace=0.05)
+    #     fig, axes, = plt.subplots(1,2,squeeze=True)
+    #     theme.setup_figure(fig)
+    #     t = sim.trange()
+    #     plt.subplots_adjust(wspace=0.1, hspace=0.05)
 
-        plot_mc=axes[0]
-        plot_mc.set_title("First Module")
-        plot_mc.plot(sim.trange(),(mem_1));
-        plot_mc.set_ylabel("Cosine similarity")
-        plot_mc.set_xticks(np.arange(1.2,1.4,0.05))
-        plot_mc.set_xticklabels(np.arange(0,200,50).tolist())
-        plot_mc.set_xlabel('time after onset impulse (ms)')
-        plot_mc.set_xlim(1.2,1.35)
-        plot_mc.set_ylim(0,0.9)
-        colors=["#00c094","#00bfc4","#00b6eb","#06a4ff","#a58aff","#df70f8","#fb61d7", "#c49a00"]
-        for i,j in enumerate(plot_mc.lines):
-            j.set_color(colors[i])
+    #     plot_mc=axes[0]
+    #     plot_mc.set_title("First Module")
+    #     plot_mc.plot(sim.trange(),(mem_1));
+    #     plot_mc.set_ylabel("Cosine similarity")
+    #     plot_mc.set_xticks(np.arange(1.2,1.4,0.05))
+    #     plot_mc.set_xticklabels(np.arange(0,200,50).tolist())
+    #     plot_mc.set_xlabel('time after onset impulse (ms)')
+    #     plot_mc.set_xlim(1.2,1.35)
+    #     plot_mc.set_ylim(0,0.9)
+    #     colors=["#00c094","#00bfc4","#00b6eb","#06a4ff","#a58aff","#df70f8","#fb61d7", "#c49a00"]
+    #     for i,j in enumerate(plot_mc.lines):
+    #         j.set_color(colors[i])
 
-        plot_mu=axes[1]
-        plot_mu.set_title("Second Module")
-        plot_mu.plot(sim.trange(),(mem_2));
-        plot_mu.set_xticks(np.arange(1.2,1.4,0.05))
-        plot_mu.set_xticklabels(np.arange(0,200,50).tolist())
-        plot_mu.set_xlabel('time after onset impulse (ms)')
-        plot_mu.set_yticks([])
-        plot_mu.set_yticklabels([])
-        plot_mu.set_xlim(1.2,1.35)
-        plot_mu.set_ylim(0,0.9)
-        for i,j in enumerate(plot_mu.lines):
-            j.set_color(colors[i])
-        plot_mu.legend(["0°","5°","10°","16°","24°","32°","40°", "Impulse"], title="Stimulus", bbox_to_anchor=(0.85, 0.25, .55, 0.8), loc=3,
-               ncol=1, mode="expand", borderaxespad=0.)
+    #     plot_mu=axes[1]
+    #     plot_mu.set_title("Second Module")
+    #     plot_mu.plot(sim.trange(),(mem_2));
+    #     plot_mu.set_xticks(np.arange(1.2,1.4,0.05))
+    #     plot_mu.set_xticklabels(np.arange(0,200,50).tolist())
+    #     plot_mu.set_xlabel('time after onset impulse (ms)')
+    #     plot_mu.set_yticks([])
+    #     plot_mu.set_yticklabels([])
+    #     plot_mu.set_xlim(1.2,1.35)
+    #     plot_mu.set_ylim(0,0.9)
+    #     for i,j in enumerate(plot_mu.lines):
+    #         j.set_color(colors[i])
+    #     plot_mu.legend(["0°","5°","10°","16°","24°","32°","40°", "Impulse"], title="Stimulus", bbox_to_anchor=(0.85, 0.25, .55, 0.8), loc=3,
+    #            ncol=1, mode="expand", borderaxespad=0.)
 
-        fig.set_size_inches(6, 4)
+    #     fig.set_size_inches(6, 4)
 
-        theme.apply(plt.gcf().axes[0])
-        theme.apply(plt.gcf().axes[1])
-        plt.savefig(figure_name + '_Impulse1_4.eps', format='eps', dpi=1000)
-        plt.show()
+    #     theme.apply(plt.gcf().axes[0])
+    #     theme.apply(plt.gcf().axes[1])
+    #     plt.savefig(figure_name + '_Impulse1_4.eps', format='eps', dpi=1000)
+    #     plt.show()
 
-    # impulse 2
-    with plt.rc_context():
-        plt.rcParams.update(theme.rcParams)
+    # # impulse 2
+    # with plt.rc_context():
+    #     plt.rcParams.update(theme.rcParams)
 
-        fig, axes, = plt.subplots(1,2,squeeze=True)
-        theme.setup_figure(fig)
-        t = sim.trange()
-        plt.subplots_adjust(wspace=0.1, hspace=0.05)
+    #     fig, axes, = plt.subplots(1,2,squeeze=True)
+    #     theme.setup_figure(fig)
+    #     t = sim.trange()
+    #     plt.subplots_adjust(wspace=0.1, hspace=0.05)
 
-        plot_mc=axes[0]
-        plot_mc.set_title("First Module")
-        plot_mc.plot(sim.trange(),(mem_1));
-        plot_mc.set_ylabel("Cosine similarity")
-        plot_mc.set_xticks(np.arange(3.8,3.95,0.05))
-        plot_mc.set_xticklabels(np.arange(0,200,50).tolist())
-        plot_mc.set_xlabel('time after onset impulse (ms)')
-        plot_mc.set_xlim(3.8,3.95)
-        plot_mc.set_ylim(0,0.9)
-        colors=["#00c094","#00bfc4","#00b6eb","#06a4ff","#a58aff","#df70f8","#fb61d7", "#c49a00"]
-        for i,j in enumerate(plot_mc.lines):
-            j.set_color(colors[i])
+    #     plot_mc=axes[0]
+    #     plot_mc.set_title("First Module")
+    #     plot_mc.plot(sim.trange(),(mem_1));
+    #     plot_mc.set_ylabel("Cosine similarity")
+    #     plot_mc.set_xticks(np.arange(3.8,3.95,0.05))
+    #     plot_mc.set_xticklabels(np.arange(0,200,50).tolist())
+    #     plot_mc.set_xlabel('time after onset impulse (ms)')
+    #     plot_mc.set_xlim(3.8,3.95)
+    #     plot_mc.set_ylim(0,0.9)
+    #     colors=["#00c094","#00bfc4","#00b6eb","#06a4ff","#a58aff","#df70f8","#fb61d7", "#c49a00"]
+    #     for i,j in enumerate(plot_mc.lines):
+    #         j.set_color(colors[i])
 
-        plot_mu=axes[1]
-        plot_mu.set_title("Second Module")
-        plot_mu.plot(sim.trange(),(mem_2));
-        plot_mu.set_xticks(np.arange(3.8,3.95,0.05))
-        plot_mu.set_xticklabels(np.arange(0,200,50).tolist())
-        plot_mu.set_xlabel('time after onset impulse (ms)')
-        plot_mu.set_yticks([])
-        plot_mu.set_yticklabels([])
-        plot_mu.set_xlim(3.8,3.95)
-        plot_mu.set_ylim(0,0.9)
-        for i,j in enumerate(plot_mu.lines):
-            j.set_color(colors[i])
-        plot_mu.legend(["0°","5°","10°","16°","24°","32°","40°", "Impulse"], title="Stimulus", bbox_to_anchor=(0.85, 0.25, .55, 0.8), loc=3,
-               ncol=1, mode="expand", borderaxespad=0.)
+    #     plot_mu=axes[1]
+    #     plot_mu.set_title("Second Module")
+    #     plot_mu.plot(sim.trange(),(mem_2));
+    #     plot_mu.set_xticks(np.arange(3.8,3.95,0.05))
+    #     plot_mu.set_xticklabels(np.arange(0,200,50).tolist())
+    #     plot_mu.set_xlabel('time after onset impulse (ms)')
+    #     plot_mu.set_yticks([])
+    #     plot_mu.set_yticklabels([])
+    #     plot_mu.set_xlim(3.8,3.95)
+    #     plot_mu.set_ylim(0,0.9)
+    #     for i,j in enumerate(plot_mu.lines):
+    #         j.set_color(colors[i])
+    #     plot_mu.legend(["0°","5°","10°","16°","24°","32°","40°", "Impulse"], title="Stimulus", bbox_to_anchor=(0.85, 0.25, .55, 0.8), loc=3,
+    #            ncol=1, mode="expand", borderaxespad=0.)
 
-        fig.set_size_inches(6, 4)
+    #     fig.set_size_inches(6, 4)
 
-        theme.apply(plt.gcf().axes[0])
-        theme.apply(plt.gcf().axes[1])
-        plt.savefig(figure_name + '_Impulse2_4.eps', format='eps', dpi=1000)
-        plt.show()
+    #     theme.apply(plt.gcf().axes[0])
+    #     theme.apply(plt.gcf().axes[1])
+    #     plt.savefig(figure_name + '_Impulse2_4.eps', format='eps', dpi=1000)
+    #     plt.show()
 
 
 
@@ -853,12 +853,12 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/WM-2021/data/kmeans/"
+        data_path = "/Users/s3344282/WM-2021/data/CSR-onset/300"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
-        n_subj =  1 #19
+        n_subj =  4 #19
         trials_per_subj = 1728
         store_representations = False
         store_decisions = True

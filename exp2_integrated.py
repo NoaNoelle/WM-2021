@@ -160,7 +160,7 @@ def gate_func(t):
 f = 10.
 w = 2. * np.pi * f
 def clear_func(t):
-    if t > 0 and t < 1.0:
+    if t > 2.25 and t < 4.3:
         a = 0.02 * np.sin(t*w)
         a = max(a,0)
         return np.ones(Nm) * a

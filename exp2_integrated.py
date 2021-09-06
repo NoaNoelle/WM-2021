@@ -222,7 +222,7 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
     inputs_reactivate[:,int(2250/res):int(2270/res),:] = np.ones(Nm)*0.0200
 
     #inputs_gate is the same for each trial 
-    Fs = 750
+    Fs = 750 #500: 650 #400:700 #300:750
     f = 10
     x = np.arange(Fs)
     sine_input = np.sin(2 * np.pi * f * x / Fs)
@@ -853,7 +853,7 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/WM-2021/data/CSR-onset/300"
+        data_path = "/Users/s3344282/WM-2021/data/CSR-onset/300/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution

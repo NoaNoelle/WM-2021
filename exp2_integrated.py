@@ -858,7 +858,7 @@ else: #no gui
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
-        n_subj =  1 #19
+        n_subj =  4 #19
         trials_per_subj = 1728
         store_representations = False
         store_decisions = True
@@ -1012,7 +1012,7 @@ else: #no gui
                         #save eerste 1200 ms
                         #channel_data = channel_data[:,:,0:600]
 
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_%i_kmeansJPB.mat" % (subj+1, split_index), {"channel_data": channel_data})
+                        io.savemat(data_path+"Decoding/subj_%i_mem_neuron_data_%i_kmeansJPB.mat" % (subj+1, split_index), {"channel_data": channel_data})
                         del(channel_data)
                         
                         #np.save(data_path+"subj_%i_initial_angles_first_%i.npy" % (subj+1, split_index), initialangles_first)

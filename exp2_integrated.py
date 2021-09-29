@@ -34,7 +34,7 @@ store_memory = False #store neural output for Cross Temporal Analysis
 sim_to_run = 2
 sim_no=str(sim_to_run)     #simulation number (used in the names of the outputfiles)
 
-# tf.config.list_physical_devices('GPU')
+#tf.config.list_physical_devices('GPU')
 ##batch processing did not work in exp1 for sim1, so check whether this works here
 if sim_to_run==1:
     batch_processing=False
@@ -853,13 +853,13 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/WM-2021/data/CSR-onset/300/"
+        data_path = "/Users/s3344282/WM-2021/data/time-freq/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
         n_subj =  4 #19
-        trials_per_subj = 1728
+        trials_per_subj = 1728 #1728
         store_representations = False
         store_decisions = True
         store_memory = True
@@ -979,41 +979,69 @@ else: #no gui
                         
                         #already cluster this.
                         #make 17 clusters (reflecting 17 EEG channels)
-                        mem_data = np.concatenate((neuro_mem_first,neuro_mem_second),axis=2) #144 x 2300 x 3000 
+                        #mem_data = np.concatenate((neuro_mem_first,neuro_mem_second),axis=2) #144 x 2300 x 3000
+                        mem_data_AMI = neuro_mem_first #144 x 2300 x 1500 
+                        mem_data_UMI = neuro_mem_second #144 x 2300 x 1500 
                         
                         neuro_mem_first[:,:,:]=0
                         neuro_mem_second[:,:,:]=0
                         
                         cut_size = 125 #=during stim presentation
-                        new_data = np.reshape(mem_data[:, :cut_size, :], (mem_data.shape[0] * cut_size, mem_data.shape[2])) 
+                        new_data_AMI = np.reshape(mem_data_AMI[:, :cut_size, :], (mem_data_AMI.shape[0] * cut_size, mem_data_AMI.shape[2])) 
+                        new_data_UMI = np.reshape(mem_data_UMI[:, :cut_size, :], (mem_data_UMI.shape[0] * cut_size, mem_data_UMI.shape[2])) 
 
-                        num_channels = 17
+                        #num_channels = 17
+                        num_channels = 7 # as in Wolff et al. (2017), 7 channel per hemisphere
                         #neurons = np.mean(cut_data, 1).T # neurons by trials
 
                         t = time.time()
 
-                        kmeans = KMeans(n_clusters=num_channels, n_init=20, n_jobs=10, tol=1e-20).fit(new_data.T)
+                        # kmeans AMI
+                        kmeans_AMI = KMeans(n_clusters=num_channels, n_init=20, n_jobs=10, tol=1e-20).fit(new_data_AMI.T)
                         elapsed = time.time() - t
                         print('Kmeans: ' + str(elapsed))
                         
-                        del(new_data)
+                        del(new_data_AMI)
 
                         t = time.time()
 
-                        channel_data = np.empty((mem_data.shape[0], num_channels, 600)) # trials by num_channels by timesteps
+                        #channel_data = np.empty((mem_data.shape[0], num_channels, 600)) # trials by num_channels by timesteps
+                        channel_data_AMI = np.empty((mem_data_AMI.shape[0], num_channels, 2300)) # trials by num_channels by timesteps
                         for channel in range(num_channels):
                             print(str(channel + 1) + "/" + str(num_channels))
-                            channel_data[:, channel, :] = np.mean(mem_data[:, :600, kmeans.labels_ == channel], axis=2)
+                            channel_data_AMI[:, channel, :] = np.mean(mem_data_AMI[:, :2300, kmeans_AMI.labels_ == channel], axis=2)
     
                         elapsed = time.time() - t
                         print('transform: ' + str(elapsed))
-                        del(mem_data)
+                        del(mem_data_AMI)
+                        
+                        # kmeans UMI
+                        kmeans_UMI = KMeans(n_clusters=num_channels, n_init=20, n_jobs=10, tol=1e-20).fit(new_data_UMI.T)
+                        elapsed = time.time() - t
+                        print('Kmeans: ' + str(elapsed))
+                        
+                        del(new_data_UMI)
+
+                        t = time.time()
+
+                        #channel_data = np.empty((mem_data.shape[0], num_channels, 600)) # trials by num_channels by timesteps
+                        channel_data_UMI = np.empty((mem_data_UMI.shape[0], num_channels, 2300)) # trials by num_channels by timesteps
+                        for channel in range(num_channels):
+                            print(str(channel + 1) + "/" + str(num_channels))
+                            channel_data_UMI[:, channel, :] = np.mean(mem_data_UMI[:, :2300, kmeans_UMI.labels_ == channel], axis=2)
+    
+                        elapsed = time.time() - t
+                        print('transform: ' + str(elapsed))
+                        del(mem_data_UMI)
 
                         #save eerste 1200 ms
                         #channel_data = channel_data[:,:,0:600]
 
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_%i_kmeansJPB.mat" % (subj+1, split_index), {"channel_data": channel_data})
-                        del(channel_data)
+                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_AMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data": channel_data_AMI})
+                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_UMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data": channel_data_UMI})
+
+                        del(channel_data_AMI)
+                        del(channel_data_UMI)
                         
                         #np.save(data_path+"subj_%i_initial_angles_first_%i.npy" % (subj+1, split_index), initialangles_first)
                         #np.save(data_path+"subj_%i_initial_angles_second_%i.npy" % (subj+1, split_index), initialangles_second)

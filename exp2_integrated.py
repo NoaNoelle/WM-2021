@@ -43,7 +43,7 @@ elif sim_to_run==2:
 
 #set this for use with nengo DL
 if batch_processing:
-    device="/gpu:3" #select GPU, use 0 (Nvidia 1) or 1 (Nvidia 3) for regular simulator, and 2 (Titan Xp 2) or 3 (Titan X (Pascal)) for batch processing
+    device="/gpu:2" #select GPU, use 0 (Nvidia 1) or 1 (Nvidia 3) for regular simulator, and 2 (Titan Xp 2) or 3 (Titan X (Pascal)) for batch processing
 if not batch_processing:
     device="/gpu:1"
 
@@ -859,7 +859,7 @@ else: #no gui
         res = 2 #resolution
 
         n_subj =  4 #19
-        trials_per_subj = 1728 #1728
+        trials_per_subj = 144 #1728
         store_representations = False
         store_decisions = True
         store_memory = True
@@ -980,14 +980,15 @@ else: #no gui
                         #already cluster this.
                         #make 17 clusters (reflecting 17 EEG channels)
                         #mem_data = np.concatenate((neuro_mem_first,neuro_mem_second),axis=2) #144 x 2300 x 3000
-                        mem_data_AMI = neuro_mem_first #144 x 2300 x 1500 
-                        mem_data_UMI = neuro_mem_second #144 x 2300 x 1500 
+                        mem_data_AMI = neuro_mem_first #1728 x 2300 x 1500 
+                        mem_data_UMI = neuro_mem_second #1728 x 2300 x 1500 
                         
                         neuro_mem_first[:,:,:]=0
                         neuro_mem_second[:,:,:]=0
                         
                         cut_size = 125 #=during stim presentation
-                        new_data_AMI = np.reshape(mem_data_AMI[:, :cut_size, :], (mem_data_AMI.shape[0] * cut_size, mem_data_AMI.shape[2])) 
+                        # reshape 1728 x 125 x 1500 into 216000 x 1500
+                        new_data_AMI = np.reshape(mem_data_AMI[:, :cut_size, :], (mem_data_AMI.shape[0] * cut_size, mem_data_AMI.shape[2]))
                         new_data_UMI = np.reshape(mem_data_UMI[:, :cut_size, :], (mem_data_UMI.shape[0] * cut_size, mem_data_UMI.shape[2])) 
 
                         #num_channels = 17
@@ -1009,7 +1010,7 @@ else: #no gui
                         channel_data_AMI = np.empty((mem_data_AMI.shape[0], num_channels, 2300)) # trials by num_channels by timesteps
                         for channel in range(num_channels):
                             print(str(channel + 1) + "/" + str(num_channels))
-                            channel_data_AMI[:, channel, :] = np.mean(mem_data_AMI[:, :2300, kmeans_AMI.labels_ == channel], axis=2)
+                            channel_data_AMI[:, channel, :] = np.mean(mem_data_AMI[:, :, kmeans_AMI.labels_ == channel], axis=2)
     
                         elapsed = time.time() - t
                         print('transform: ' + str(elapsed))
@@ -1028,7 +1029,7 @@ else: #no gui
                         channel_data_UMI = np.empty((mem_data_UMI.shape[0], num_channels, 2300)) # trials by num_channels by timesteps
                         for channel in range(num_channels):
                             print(str(channel + 1) + "/" + str(num_channels))
-                            channel_data_UMI[:, channel, :] = np.mean(mem_data_UMI[:, :2300, kmeans_UMI.labels_ == channel], axis=2)
+                            channel_data_UMI[:, channel, :] = np.mean(mem_data_UMI[:, :, kmeans_UMI.labels_ == channel], axis=2)
     
                         elapsed = time.time() - t
                         print('transform: ' + str(elapsed))
@@ -1037,8 +1038,8 @@ else: #no gui
                         #save eerste 1200 ms
                         #channel_data = channel_data[:,:,0:600]
 
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_AMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data": channel_data_AMI})
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_UMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data": channel_data_UMI})
+                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_AMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_AMI": channel_data_AMI})
+                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_UMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_UMI": channel_data_UMI})
 
                         del(channel_data_AMI)
                         del(channel_data_UMI)

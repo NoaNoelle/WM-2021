@@ -499,7 +499,7 @@ def create_model(seed=None):
         gate = nengo.Ensemble(Nm, D, intercepts=nengo.dists.Uniform(0.01, 0.1),radius=1, label="gate")
         nengo.Connection(model.gateNode, gate.neurons)#,transform=np.ones((Ns,1)))
         nengo.Connection(memory_first, gate, synapse=.05, transform = 1.0) #play with these transform values (eg 1.2/1.2 with gatefunc3)
-        nengo.Connection(gate, memory_first, synapse=.05, transform = 0.8) #play with these transform values or 1.0/.8 with gatefunc
+        nengo.Connection(gate, memory_first, synapse=.05, transform = 0.9) #play with these transform values or 1.0/.8 with gatefunc
 
         #comparison represents sin, cosine of theta of both sensory and memory ensemble
         comparison_first = nengo.Ensemble(Nc, dimensions=4,radius=math.sqrt(2),intercepts=Uniform(.01, 1),label='comparison_first')
@@ -558,7 +558,7 @@ plt.style.use('default')
 
 def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
 
-    save_path = '/Users/s3344282/WM-2021/data/CSR-on-memory/second-run/sim1'
+    save_path = '/Users/s3344282/WM-2021/data/CSR-on-memory/connstr/sim1'
 
     figure_name = os.path.join(save_path,'exp2_figure')
 
@@ -637,7 +637,7 @@ def plot_sim_1(sp_1,sp_2,res_1,res_2,cal_1,cal_2, mem_1, mem_2):
         theme.apply(plt.gcf().axes[1])
         theme.apply(plt.gcf().axes[2])
         theme.apply(plt.gcf().axes[3])
-        plt.savefig(figure_name + '_3.eps', format='eps', dpi=1000)
+        plt.savefig(figure_name + '_3_0.9.eps', format='eps', dpi=1000)
         plt.show()
 
 
@@ -852,7 +852,7 @@ else: #no gui
     if sim_to_run == 2:
 
         load_gabors_svd = False #set to false for real simulation
-        data_path = "/Users/s3344282/WM-2021/data/CSR-on-memory/second-run/"
+        data_path = "/Users/s3344282/WM-2021/data/CSR-on-memory/connstr/gate_to_mem_0.9/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution

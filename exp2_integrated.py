@@ -853,12 +853,12 @@ else: #no gui
 
         load_gabors_svd = False #set to false for real simulation
 
-        data_path = "/Users/s3344282/WM-2021/data/time-freq/"
+        data_path = "/Users/s3344282/WM-2021/data/time-freq/attempt/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
 
-        n_subj =  4 #19
+        n_subj =  1 #19
         trials_per_subj = 144 #1728
         store_representations = False
         store_decisions = True
@@ -986,7 +986,7 @@ else: #no gui
                         neuro_mem_first[:,:,:]=0
                         neuro_mem_second[:,:,:]=0
                         
-                        cut_size = 125 #=during stim presentation
+                        cut_size = 250 #=during stim presentation+250 ms afterward
                         # reshape 1728 x 125 x 1500 into 216000 x 1500
                         new_data_AMI = np.reshape(mem_data_AMI[:, :cut_size, :], (mem_data_AMI.shape[0] * cut_size, mem_data_AMI.shape[2]))
                         new_data_UMI = np.reshape(mem_data_UMI[:, :cut_size, :], (mem_data_UMI.shape[0] * cut_size, mem_data_UMI.shape[2])) 
@@ -1038,8 +1038,8 @@ else: #no gui
                         #save eerste 1200 ms
                         #channel_data = channel_data[:,:,0:600]
 
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_AMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_AMI": channel_data_AMI})
-                        io.savemat(data_path+"/Decoding/subj_%i_mem_neuron_data_UMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_UMI": channel_data_UMI})
+                        io.savemat(data_path+"Decoding/subj_%i_mem_neuron_data_AMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_AMI": channel_data_AMI})
+                        io.savemat(data_path+"Decoding/subj_%i_mem_neuron_data_UMI_%i_kmeansNNS.mat" % (subj+1, split_index), {"channel_data_UMI": channel_data_UMI})
 
                         del(channel_data_AMI)
                         del(channel_data_UMI)

@@ -146,7 +146,7 @@ def reactivate_func(t):
         return np.zeros(Nm)
 
 #sine wave for the gated mechanism
-#30Hz rhythm
+#10Hz rhythm
 f = 10.
 w = 2. * np.pi * f
 def gate_func(t):
@@ -227,7 +227,8 @@ def get_data(inputs_first, inputs_second, inputs_reactivate, inputs_gate, inputs
     x = np.arange(Fs)
     sine_input = np.sin(2 * np.pi * f * x / Fs)
 
-    for neuron in range(Ns):
+    #for neuron in range(Ns):
+    for neuron in range(Nm):
         inputs_gate[:,int(300/res):int(1800/res),neuron] = sine_input
 
     #inputs_clear is the same for each trial 
@@ -852,7 +853,7 @@ else: #no gui
     if sim_to_run == 2:
 
         load_gabors_svd = False #set to false for real simulation
-        data_path = "/Users/s3344282/WM-2021/data/CSR-on-memory/connstr/gate_to_mem_0.9/"
+        data_path = "/Users/s3344282/WM-2021/data/CSR-on-memory/fixed-getdata-Nm/"
 
         #set to 1 for (default) simulator dt of 0.001, set to 2 for simulator dt of 0.002, and so on. the number of time steps should be divisible by this number to prevent errors.
         res = 2 #resolution
@@ -895,7 +896,7 @@ else: #no gui
             neuro_mem_first = np.zeros((int(trials_per_subj/split), n_steps, Nm))
             neuro_mem_second = np.zeros((int(trials_per_subj/split), n_steps, Nm))
 
-        for subj in range(3,7):
+        for subj in range(n_subj):
 
             split_index=0
 
